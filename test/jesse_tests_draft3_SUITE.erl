@@ -149,3 +149,6 @@ dateFormat(Config) ->
 
 timeFormat(Config) ->
   do_test("timeFormat", Config).
+
+dateTimeFormat(Config) ->
+  do_test("dateTimeFormat", Config).
