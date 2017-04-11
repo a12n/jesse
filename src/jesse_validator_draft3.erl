@@ -830,6 +830,16 @@ check_enum(Value, Enum, State) ->
       handle_data_invalid(?not_in_enum, Value, State)
   end.
 
+check_format(Value, _Format = <<"date-time">>, State) when is_binary(Value) ->
+  try
+    <<Date:10/bytes, $T, Time:8/bytes, $Z>> = Value,
+    case valid_date(Date) andalso valid_time(Time) of
+      true  -> State;
+      false -> handle_data_invalid(?wrong_format, Value, State)
+    end
+  catch
+    error:{badmatch, _} -> handle_data_invalid(?wrong_format, Value, State)
+  end;
 check_format(Value, _Format = <<"date">>, State) when is_binary(Value) ->
   case valid_date(Value) of
     true  -> State;
