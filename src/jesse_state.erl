@@ -29,6 +29,7 @@
         , get_current_path/1
         , get_current_schema/1
         , get_current_schema_id/1
+        , get_custom_formats/1
         , get_default_schema_ver/1
         , get_error_handler/1
         , get_error_list/1
@@ -56,6 +57,7 @@
          , current_path       :: [binary() | non_neg_integer()]
                                  %% current path in reversed order
          , allowed_errors     :: non_neg_integer() | 'infinity'
+         , custom_formats     :: [{binary(), fun((jesse:json_term()) -> boolean())}]
          , error_list         :: list()
          , error_handler      :: fun(( jesse_error:error_reason()
                                      , [jesse_error:error_reason()]
@@ -105,6 +107,11 @@ get_current_schema_id(#state{ current_schema = CurrentSchema
   Default = jesse_json_path:value(?ID, RootSchema, ?not_found),
   jesse_json_path:value(?ID, CurrentSchema, Default).
 
+%% @doc Getter for `custom_formats'.
+-spec get_custom_formats(State :: state()) -> [{binary(), fun((jesse:json_term()) -> boolean())}].
+get_custom_formats(#state{custom_formats = CustomFormats}) ->
+  CustomFormats.
+
 %% @doc Getter for `default_schema_ver'.
 -spec get_default_schema_ver(State :: state()) -> binary().
 get_default_schema_ver(#state{default_schema_ver = SchemaVer}) ->
@@ -136,6 +143,10 @@ new(JsonSchema, Options) ->
                                         , Options
                                         , 0
                                         ),
+  CustomFormats    = proplists:get_value( custom_formats
+                                        , Options
+                                        , []
+                                        ),
   MetaSchemaVer = jesse_json_path:value( ?SCHEMA
                                        , JsonSchema
                                        , ?default_schema_ver
@@ -151,6 +162,7 @@ new(JsonSchema, Options) ->
   NewState = #state{ root_schema        = JsonSchema
                    , current_path       = []
                    , allowed_errors     = AllowedErrors
+                   , custom_formats     = CustomFormats
                    , error_list         = []
                    , error_handler      = ErrorHandler
                    , default_schema_ver = DefaultSchemaVer
