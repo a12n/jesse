@@ -30,6 +30,10 @@
 %% Includes
 -include("jesse_schema_validator.hrl").
 
+-define(IS_DIGITS(C0), C0 >= $0, C0 =< $9).
+-define(IS_DIGITS(C1, C0), ?IS_DIGITS(C0), ?IS_DIGITS(C1)).
+-define(IS_DIGITS(C3, C2, C1, C0), ?IS_DIGITS(C3, C2), ?IS_DIGITS(C1, C0)).
+
 -type schema_error() :: ?wrong_type_dependency
                       | ?wrong_type_items.
 
@@ -826,6 +830,11 @@ check_enum(Value, Enum, State) ->
       handle_data_invalid(?not_in_enum, Value, State)
   end.
 
+check_format(Value, _Format = <<"date">>, State) when is_binary(Value) ->
+  case valid_date(Value) of
+    true  -> State;
+    false -> handle_data_invalid(?wrong_format, Value, State)
+  end;
 check_format(_Value, _Format, State) ->
   State.
 
@@ -1019,3 +1028,14 @@ add_to_path(State, Property) ->
 %% @private
 remove_last_from_path(State) ->
   jesse_state:remove_last_from_path(State).
+
+%% @private
+valid_date(<<Y3, Y2, Y1, Y0, $-, M1, M0, $-, D1, D0>>)
+  when ?IS_DIGITS(Y3, Y2, Y1, Y0),
+       ?IS_DIGITS(M1, M0),
+       ?IS_DIGITS(D1, D0) ->
+  calendar:valid_date( list_to_integer([Y3, Y2, Y1, Y0])
+                     , list_to_integer([M1, M0])
+                     , list_to_integer([D1, D0])
+                     );
+valid_date(_Other) -> false.
