@@ -835,6 +835,11 @@ check_format(Value, _Format = <<"date">>, State) when is_binary(Value) ->
     true  -> State;
     false -> handle_data_invalid(?wrong_format, Value, State)
   end;
+check_format(Value, _Format = <<"time">>, State) when is_binary(Value) ->
+  case valid_time(Value) of
+    true  -> State;
+    false -> handle_data_invalid(?wrong_format, Value, State)
+  end;
 check_format(_Value, _Format, State) ->
   State.
 
@@ -1039,3 +1044,22 @@ valid_date(<<Y3, Y2, Y1, Y0, $-, M1, M0, $-, D1, D0>>)
                      , list_to_integer([D1, D0])
                      );
 valid_date(_Other) -> false.
+
+%% @private
+valid_time(<<H1, H0, $:, M1, M0, $:, S1, S0>>)
+  when ?IS_DIGITS(H1, H0),
+       ?IS_DIGITS(M1, M0),
+       ?IS_DIGITS(S1, S0) ->
+  case { list_to_integer([H1, H0])
+       , list_to_integer([M1, M0])
+       , list_to_integer([S1, S0])
+       }
+  of
+    {H, M, S} when
+        H >= 0, H =< 23,
+        M >= 0, M =< 59,
+        S >= 0, S =< 59;
+        H =:= 24, M =:= 0, S =:= 0 -> true;
+    _Other -> false
+  end;
+valid_time(_Other) -> false.
