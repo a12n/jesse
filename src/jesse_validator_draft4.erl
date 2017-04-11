@@ -973,8 +973,8 @@ check_format(Value, _Format = <<"ipv6">>, State) when is_binary(Value) ->
 check_format(Value, _Format = <<"uri">>, State) when is_binary(Value) ->
   %% not yet supported
   State;
-check_format(_Value, _Format, State) ->
-  State.
+check_format(Value, Format, State) ->
+  jesse_validator_format:check_custom_format(Value, Format, State).
 
 %% @doc 5.1.1. multipleOf
 %%

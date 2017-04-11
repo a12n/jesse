@@ -826,8 +826,8 @@ check_enum(Value, Enum, State) ->
       handle_data_invalid(?not_in_enum, Value, State)
   end.
 
-check_format(_Value, _Format, State) ->
-  State.
+check_format(Value, Format, State) ->
+  jesse_validator_format:check_custom_format(Value, Format, State).
 
 %% @doc 5.24.  divisibleBy
 %%
