@@ -144,5 +144,8 @@ remoteRefExtra(Config) ->
 unicodePatternProperties(Config) ->
   do_test("unicodePatternProperties", Config).
 
+dateFormat(Config) ->
+  do_test("dateFormat", Config).
+
 timeFormat(Config) ->
   do_test("timeFormat", Config).
